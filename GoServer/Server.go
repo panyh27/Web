@@ -1,9 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -14,7 +11,7 @@ type contents struct {
 	IsFloder bool        `json:"type"`
 	FileName string      `json:"name"`
 	Path     string      `json:"path"`
-	FileList []*contents `json: "children"`
+	FileList []*contents `json:"children"`
 }
 
 func walk(path string, node *contents) {
@@ -24,7 +21,6 @@ func walk(path string, node *contents) {
 	for _, FileName := range files {
 		// 拼接全路径
 		fpath := filepath.Join(path, FileName)
-
 		// 构造文件结构
 		fio, _ := os.Lstat(fpath)
 		isDir := fio.IsDir()
@@ -47,24 +43,13 @@ func listFiles(dirname string) []string {
 }
 
 func main() {
-	root := contents{true, "Files", "./Files", []*contents{}}
-
-	walk("./Files", &root)
-	data, _ := json.Marshal(root)
-
-	fmt.Printf("%s", data)
 	r := gin.Default()
 	r.GET("/", func(c *gin.Context) {
+		root := contents{true, "Files", "./Files", []*contents{}}
+		walk("./Files", &root)
 		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 		c.Header("Access-Control-Allow-Credentials", "true")
-		files, _ := ioutil.ReadDir("./Files")
-		FileNames := []string{}
-		for _, file := range files {
-			FileNames = append(FileNames, file.Name())
-		}
-		c.JSON(200, gin.H{
-			"message": FileNames,
-		})
+		c.JSON(200, &root.FileList)
 	})
 	r.Run() // listen and serve on 0.0.0.0:8080
 }

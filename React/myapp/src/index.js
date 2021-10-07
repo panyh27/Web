@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createElement } from 'react';
 import { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
@@ -16,6 +16,25 @@ const { Header, Sider, Footer, Content } = Layout
 
 
 const { SubMenu } = Menu
+
+function createElementWithJson(data) {
+  let list = []
+  data.forEach((item, index) => {
+    if (item.type) {
+      list.push(
+        <SubMenu key={index} title={item.name}>
+          {createElementWithJson(item.children)}
+        </SubMenu>
+      )
+    } else {
+      list.push(
+        <Menu.Item key={index}><Link to={item.name}>{item.name}</Link></Menu.Item>
+      )
+    }
+  })
+  return list
+}
+
 function Index() {
   const [data, setData] = useState([]);
   const [markdown, setMarkdown] = useState('');
@@ -26,7 +45,7 @@ function Index() {
       withCredentials: true
     })
       .then((response) => {
-        setData(response.data.message);
+        setData(response.data);
       })
       .catch((error) => {
         console.log(error);
@@ -39,16 +58,7 @@ function Index() {
       })
   }, []);
 
-  let list=[]
-  data.map((item,index)=>{
-    list.push(
-      <Menu.Item key={index}><Link to={item}>{item}</Link></Menu.Item>
-      )
-  })
-  
-
   return (
-
     <Layout>
       <Header className='header'>
         <div className="logo" />
@@ -65,8 +75,7 @@ function Index() {
             defaultOpenKeys={['sub1']}
             style={{ height: '100%', borderRight: 0 }}
           >
-
-            {list}
+            {createElementWithJson(data)}
           </Menu>
         </Sider>
         <Layout style={{ padding: '0 0 0 24px' }}>
