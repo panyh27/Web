@@ -2,6 +2,7 @@ import React, { createElement } from 'react';
 import { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
+  Switch,
   Route,
   Link
 } from 'react-router-dom'
@@ -11,86 +12,38 @@ import ReactMarkdown from 'react-markdown'
 import "antd/dist/antd.css";
 import { Layout, Menu, Breadcrumb } from "antd";
 import './index.css';
-import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons';
+import { useHistory, useParams, useLocation } from "react-router-dom";
+import Blog from './blog/blog.js';
 const { Header, Sider, Footer, Content } = Layout
 
 
-const { SubMenu } = Menu
-
-function createElementWithJson(data) {
-  let list = []
-  data.forEach((item, index) => {
-    if (item.type) {
-      list.push(
-        <SubMenu key={index} title={item.name}>
-          {createElementWithJson(item.children)}
-        </SubMenu>
-      )
-    } else {
-      list.push(
-        <Menu.Item key={index}><Link to={item.name}>{item.name}</Link></Menu.Item>
-      )
-    }
-  })
-  return list
-}
-
 function Index() {
-  const [data, setData] = useState([]);
-  const [markdown, setMarkdown] = useState('');
-  useEffect(() => {
-    axios({
-      method: 'get',
-      url: 'http://localhost:8080/',
-      withCredentials: true
-    })
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      })
+  const [inputValue, setInputValue] = useState('hello')
+  const location = useLocation();
 
-    axios('MachineLearning.md')
-      .then((response) => setMarkdown(response.data))
-      .catch((error) => {
-        console.log(error);
-      })
-  }, []);
+  const handleOnChange = (event) => {
+    const value = event.target.value
+    setInputValue(value)
+    console.log(inputValue)
+  }
 
   return (
     <Layout>
       <Header className='header'>
-        <div className="logo" />
-        <Menu mode="horizontal" defaultSelectedKeys={['blog']}>
-          <Menu.Item key="blog">博客</Menu.Item>
-          <Menu.Item key="photo">照片</Menu.Item>
+        <div className="logo" >
+          <input value={inputValue} onChange={handleOnChange}>
+
+          </input>
+        </div>
+        <Menu mode="horizontal" defaultSelectedKeys={['home']}>
+          <Menu.Item key="home" ><Link to="/">首页</Link></Menu.Item>
+          <Menu.Item key="doc"><Link to="/blog">文档</Link></Menu.Item>
+          <Menu.Item key="photo"><Link to="/photo">照片</Link></Menu.Item>
         </Menu>
       </Header>
-      <Layout className='body'>
-        <Sider width={200}>
-          <Menu
-            mode="inline"
-            defaultSelectedKeys={['1']}
-            defaultOpenKeys={['sub1']}
-            style={{ height: '100%', borderRight: 0 }}
-          >
-            {createElementWithJson(data)}
-          </Menu>
-        </Sider>
-        <Layout style={{ padding: '0 0 0 24px' }}>
-          <Breadcrumb style={{ margin: '16px 0' }}>
-            <Breadcrumb.Item>Home</Breadcrumb.Item>
-            <Breadcrumb.Item>List</Breadcrumb.Item>
-            <Breadcrumb.Item>App</Breadcrumb.Item>
-          </Breadcrumb>
-          <Content className="content">
-            <ReactMarkdown>
-              {markdown}
-            </ReactMarkdown>
-          </Content>
-        </Layout>
-      </Layout>
+      <Switch>
+        <Route path="/blog" component={Blog} />
+      </Switch>
       <Footer className="footer">Footer</Footer>
     </Layout>
   );
