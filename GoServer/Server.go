@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -52,25 +53,14 @@ func main() {
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.JSON(200, &root.FileList)
 	})
-	// r.GET("/blog", func(c *gin.Context) {
-	// 	fileDir := c.Query("fileDir")
-	// 	fileName := c.Query("fileName")
-	// 	//打开文件
-	// 	//   _, errByOpenFile := os.Open(fileDir + "/" + fileName)
-	// 	//  //非空处理
-	// 	//   if common.IsEmpty(fileDir) || common.IsEmpty(fileName) || errByOpenFile != nil {
-	// 	//       /*c.JSON(http.StatusOK, gin.H{
-	// 	//           "success": false,
-	// 	//           "message": "失败",
-	// 	//           "error":   "资源不存在",
-	// 	//       })*/
-	// 	//       c.Redirect(http.StatusFound, "/404")
-	// 	//       return
-	// 	//   }
-	// 	c.Header("Content-Type", "application/octet-stream")
-	// 	c.Header("Content-Disposition", "attachment; filename="+fileName)
-	// 	c.Header("Content-Transfer-Encoding", "binary")
-	// 	c.File(fileDir + "/" + fileName)
-	// })
+	r.GET("/files", func(c *gin.Context) {
+		filePath := c.Query("filePath")
+		data, _ := ioutil.ReadFile(filePath)
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Content-Type", "application/octet-stream")
+		c.Header("Content-Disposition", "attachment; filename="+filePath)
+		c.String(200, string(data))
+	})
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
